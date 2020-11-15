@@ -12,7 +12,7 @@ The most current version is TLS 1.3, defined in RFC 8446 (August 2018).
 * Server (HTTPS)
 ** client-auth: none|want
 
-Client: HTTP
+*Client: HTTP*
 
 .application.yml:
 ----
@@ -28,7 +28,7 @@ NO SSL CONFIGURATION
 ----
 
 
-Server: HTTPS
+*Server: HTTPS*
 
 .application.yml:
 * Server need keystore to hold server certificate to share with the client for SSL/TLS handshake.
@@ -36,8 +36,8 @@ Server: HTTPS
 ssl:
     enabled: true
     client-auth: none|want
-    key-store: C:\Users\muku3\projects\mutual-tls\self-signed-certificates\client\keystore.jks
-    key-store-password: svn4ever
+    key-store: <path to keystore>
+    key-store-password: <keystore password>
 ----
 
 .VM options:
@@ -46,6 +46,49 @@ NO VM OPTION REQUIRED
 ----
 
 === Case 2:
+
+* Client (HTTP)
+* Server (HTTPS)
+** client-auth: *need*
+
+*Client: HTTPS*
+
+.application.yml:
+----
+NO SSL CONFIGURATION
+----
+
+.VM options:
+* Client need *truststore* to hold server certificate(s), used to validate *server* in SSL/TLS handshake.
+* Client need *keystore* to hold client certificate(s), used to validate *client* in SSL/TLS handshake.
+* Note: Adding truststore and keystore information in the server.ssl is not effective in this case.
+----
+-Djavax.net.ssl.trustStore=<path to truststore>
+-Djavax.net.ssl.trustStorePassword=<truststore password>
+-Djavax.net.ssl.keyStore=<path to keystore>
+-Djavax.net.ssl.keyStorePassword=<keystore password>
+----
+
+
+*Server: HTTPS*
+
+.application.yml:
+* Server need keystore to hold server certificate to share with the client for SSL/TLS handshake.
+* Server need truststore to hold client certificate to validate client in SSL/TLS handshake.
+----
+ssl:
+    enabled: true
+    client-auth: need
+    key-store: <path to keystore>
+    key-store-password: <keystore password>
+    trust-store: <path to truststore>
+    trust-store-password: <truststore password>
+----
+
+.VM options:
+----
+NO VM OPTION REQUIRED
+----
 
 === Case 3:
 
