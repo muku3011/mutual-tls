@@ -1,16 +1,12 @@
 #
-#     SERVER
+# Server
 #
 server:
   port: 8000
   ssl:
     enabled: true
-    client-auth: want
-    # Keystore
-    key-store: C:\\Users\\muku3\\projects\\mutual-tls\\dev-certificates\\client\\keystore.jks
+    client-auth: want # want|none
+    key-store: C:\Users\muku3\projects\mutual-tls\self-signed-certificates\client\keystore.jks
     key-store-password: svn4ever
-    key-password: svn4ever
-    trust-store=classpath: C:\\Users\\muku3\\projects\\mutual-tls\\dev-certificates\\client\\truststore.jks
-    trust-store-password: svn4ever
 
 
