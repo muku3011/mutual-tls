@@ -13,8 +13,8 @@ public class ClientController {
 
     private static final Logger logger = Logger.getAnonymousLogger();
 
-    @GetMapping("/connect/server")
     @ResponseBody
+    @GetMapping("/connect/server")
     public ResponseEntity<String> checkClient() {
         RestTemplate restTemplate = new RestTemplate();
         String serverCheckUrl = "https://localhost:8000/check";

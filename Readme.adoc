@@ -1,12 +1,29 @@
-= SSL/TLS
+= TLS in Spring Boot
+:toc:
+:toc-title: Table of Content
+:toclevels: 4
 
-SL (Secure Sockets Layer) and its successor, TLS (Transport Layer Security), are protocols for establishing authenticated and encrypted links between networked computers.
+toc::[]
+
+== Introduction
+
+SSL (Secure Sockets Layer) and its successor, TLS (Transport Layer Security), are protocols for establishing authenticated and encrypted links between networked computers.
 Although the SSL protocol was deprecated with the release of TLS 1.0 in 1999, it is still common to refer to these related technologies as “SSL” or “SSL/TLS”.
 The most current version is TLS 1.3, defined in RFC 8446 (August 2018).
 
-== One way authentication:
+== Spring boot configuration
+Property: ssl.client-auth: NONE|WANT|NEED (are not case-sensitive)
 
-=== Case 1:
+* NONE:Client authentication is not wanted.
+* WANT:Client authentication is wanted but not mandatory.
+* NEED:Client authentication is needed and mandatory.
+
+== One-way authentication
+
+.Only server is authenticated by a client (3rd step)
+image::one-way-ssl.png[One-way authentication]
+
+=== Case 1: Client is running over HTTP and Server is HTTPS
 
 * Client (HTTP)
 * Server (HTTPS)
@@ -45,11 +62,99 @@ ssl:
 NO VM OPTION REQUIRED
 ----
 
-=== Case 2:
+=== Case 2: Both Client and Server are running over HTTPS
+
+* Client (HTTPS)
+* Server (HTTPS)
+** client-auth: none|want
+
+*Client: HTTPS*
+
+.application.yml:
+----
+ssl:
+    enabled: true
+    client-auth: need
+    key-store: <path to keystore>
+    key-store-password: <keystore password>
+----
+
+.VM options:
+* Client need truststore to hold server certificate(s), used to validate server in SSL/TLS handshake.
+* Note: Adding truststore information in the server.ssl is not effective in this case.
+----
+-Djavax.net.ssl.trustStore=<path to truststore>
+-Djavax.net.ssl.trustStorePassword=<truststore password>
+----
+
+*Server: HTTPS*
+
+.application.yml:
+* Server need keystore to hold server certificate to share with the client for SSL/TLS handshake.
+* Server need truststore to hold client certificate to validate client in SSL/TLS handshake.
+----
+ssl:
+    enabled: true
+    client-auth: need
+    key-store: <path to keystore>
+    key-store-password: <keystore password>
+    trust-store: <path to truststore>
+    trust-store-password: <truststore password>
+----
+
+.VM options:
+----
+NO VM OPTION REQUIRED
+----
+
+== Two-way authentication (mutual authentication)
+
+.Both client and server will authenticate each other (3rd and 8th step)
+image::mutual-authentication.png[Two-way authentication (mutual authentication)]
+
+=== Case 1: Client is running over HTTP and Server is HTTPS
 
 * Client (HTTP)
 * Server (HTTPS)
-** client-auth: *need*
+** client-auth: need
+
+*Client: HTTP*
+
+.application.yml:
+----
+NO SSL CONFIGURATION
+----
+
+.VM options:
+* Client need truststore to hold server certificate(s), used to validate server in SSL/TLS handshake.
+* Note: Adding truststore information in the server.ssl is not effective in this case.
+----
+-Djavax.net.ssl.trustStore=<path to truststore>
+-Djavax.net.ssl.trustStorePassword=<truststore password>
+----
+
+*Server: HTTPS*
+
+.application.yml:
+* Server need keystore to hold server certificate to share with the client for SSL/TLS handshake.
+----
+ssl:
+    enabled: true
+    client-auth: need
+    key-store: <path to keystore>
+    key-store-password: <keystore password>
+----
+
+.VM options:
+----
+NO VM OPTION REQUIRED
+----
+
+=== Case 2: Both Client and Server are running over HTTPS
+
+* Client (HTTPS)
+* Server (HTTPS)
+** client-auth: need
 
 *Client: HTTPS*
 
@@ -89,9 +194,3 @@ ssl:
 ----
 NO VM OPTION REQUIRED
 ----
-
-=== Case 3:
-
-=== Case 4:
-
-=== Case 5:

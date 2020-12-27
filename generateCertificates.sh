@@ -3,7 +3,7 @@
 <<'SSLCONFIG'
     To create ssl.config file at runtime
     param1: CN or common name, in some cases a specific CN name is desired
-    param2: Adding a DNS to Subject alternative name, TLS validation sometimes need this
+    param2: Adding a DNS to Subject alternative name, TLS validation sometimes need this (Not used/Implemented)
 SSLCONFIG
 createSslConfigFile() {
   rm -f ssl.configclear
