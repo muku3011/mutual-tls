@@ -3,3 +3,10 @@
 #
 server:
   port: 9000
+  ssl:
+    enabled: true
+    client-auth: none|want|need
+    key-store: <path to keystore>
+    key-store-password: <keystore password>
+    trust-store: <path to truststore>
+    trust-store-password: <truststore password>

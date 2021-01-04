@@ -23,17 +23,20 @@ Property: ssl.client-auth: NONE|WANT|NEED (are not case-sensitive)
 .Only server is authenticated by a client (3rd step)
 image::one-way-ssl.png[One-way authentication]
 
-=== Case 1: Client is running over HTTP and Server is HTTPS
-
-* Client (HTTP)
+* Client (HTTPS)
 * Server (HTTPS)
 ** client-auth: none|want
 
-*Client: HTTP*
+*Client: HTTPS*
 
 .application.yml:
+* Client need keystore to hold client certificate for running application over HTTPS.
 ----
-NO SSL CONFIGURATION
+ssl:
+    enabled: true
+    client-auth: none|want
+    key-store: <path to keystore>
+    key-store-password: <keystore password>
 ----
 
 .VM options:
@@ -43,7 +46,6 @@ NO SSL CONFIGURATION
 -Djavax.net.ssl.trustStore=<path to truststore>
 -Djavax.net.ssl.trustStorePassword=<truststore password>
 ----
-
 
 *Server: HTTPS*
 
@@ -62,96 +64,11 @@ ssl:
 NO VM OPTION REQUIRED
 ----
 
-=== Case 2: Both Client and Server are running over HTTPS
-
-* Client (HTTPS)
-* Server (HTTPS)
-** client-auth: none|want
-
-*Client: HTTPS*
-
-.application.yml:
-----
-ssl:
-    enabled: true
-    client-auth: need
-    key-store: <path to keystore>
-    key-store-password: <keystore password>
-----
-
-.VM options:
-* Client need truststore to hold server certificate(s), used to validate server in SSL/TLS handshake.
-* Note: Adding truststore information in the server.ssl is not effective in this case.
-----
--Djavax.net.ssl.trustStore=<path to truststore>
--Djavax.net.ssl.trustStorePassword=<truststore password>
-----
-
-*Server: HTTPS*
-
-.application.yml:
-* Server need keystore to hold server certificate to share with the client for SSL/TLS handshake.
-* Server need truststore to hold client certificate to validate client in SSL/TLS handshake.
-----
-ssl:
-    enabled: true
-    client-auth: need
-    key-store: <path to keystore>
-    key-store-password: <keystore password>
-    trust-store: <path to truststore>
-    trust-store-password: <truststore password>
-----
-
-.VM options:
-----
-NO VM OPTION REQUIRED
-----
-
 == Two-way authentication (mutual authentication)
 
 .Both client and server will authenticate each other (3rd and 8th step)
 image::mutual-authentication.png[Two-way authentication (mutual authentication)]
 
-=== Case 1: Client is running over HTTP and Server is HTTPS
-
-* Client (HTTP)
-* Server (HTTPS)
-** client-auth: need
-
-*Client: HTTP*
-
-.application.yml:
-----
-NO SSL CONFIGURATION
-----
-
-.VM options:
-* Client need truststore to hold server certificate(s), used to validate server in SSL/TLS handshake.
-* Note: Adding truststore information in the server.ssl is not effective in this case.
-----
--Djavax.net.ssl.trustStore=<path to truststore>
--Djavax.net.ssl.trustStorePassword=<truststore password>
-----
-
-*Server: HTTPS*
-
-.application.yml:
-* Server need keystore to hold server certificate to share with the client for SSL/TLS handshake.
-----
-ssl:
-    enabled: true
-    client-auth: need
-    key-store: <path to keystore>
-    key-store-password: <keystore password>
-----
-
-.VM options:
-----
-NO VM OPTION REQUIRED
-----
-
-=== Case 2: Both Client and Server are running over HTTPS
-
 * Client (HTTPS)
 * Server (HTTPS)
 ** client-auth: need
@@ -159,8 +76,16 @@ NO VM OPTION REQUIRED
 *Client: HTTPS*
 
 .application.yml:
+* Client need keystore to hold client certificate to share with the server for SSL/TLS handshake.
+* Client need truststore to hold server certificate to validate server in SSL/TLS handshake.
 ----
-NO SSL CONFIGURATION
+ssl:
+    enabled: true
+    client-auth: none|want|need
+    key-store: <path to keystore>
+    key-store-password: <keystore password>
+    trust-store: <path to truststore>
+    trust-store-password: <truststore password>
 ----
 
 .VM options:
@@ -174,7 +99,6 @@ NO SSL CONFIGURATION
 -Djavax.net.ssl.keyStorePassword=<keystore password>
 ----
 
-
 *Server: HTTPS*
 
 .application.yml:
@@ -190,7 +114,13 @@ ssl:
     trust-store-password: <truststore password>
 ----
 
-.VM options:
+.VM options: (This is needed in case server is also communicating with client)
+* Server need *truststore* to hold client certificate(s), used to validate *client* in SSL/TLS handshake.
+* Server need *keystore* to hold server certificate(s), used to validate *server* in SSL/TLS handshake.
+* Note: Adding truststore and keystore information in the server.ssl is not effective in this case.
 ----
-NO VM OPTION REQUIRED
+-Djavax.net.ssl.trustStore=<path to truststore>
+-Djavax.net.ssl.trustStorePassword=<truststore password>
+-Djavax.net.ssl.keyStore=<path to keystore>
+-Djavax.net.ssl.keyStorePassword=<keystore password>
 ----
